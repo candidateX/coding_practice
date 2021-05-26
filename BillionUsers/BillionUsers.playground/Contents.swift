@@ -1,11 +1,6 @@
 import UIKit
 
-var str = "Hello, playground"
-
 let max_num_users = 1000000000
-
-print("Growth: \(grow(rate: Array(repeating: 1.21, count: 1001), maxUsers: max_num_users))")
-
 
 func grow(rate: [Double], maxUsers: Int) -> Int {
     guard rate.count > 0 && rate.count <= 1000 else { print("1 <= rate <= 1,000"); return 0 }
@@ -43,3 +38,44 @@ func growth(days: Int = 0, factor: Double) -> TotalGrowth {
     
     return total
 }
+
+struct GrowthRates {
+    let rates: [Double]
+}
+
+private extension GrowthRates {
+    func daysUntilBillionUsers() -> Int {
+        grow(rate: rates, maxUsers: max_num_users)
+    }
+}
+
+// These are the tests we use to determine if the solution is correct.
+// You can add your own at the bottom, but they are otherwise not editable!
+
+var testCaseNumber = 1
+
+private func check(_ expectedValue: Int, matches output: Int) {
+    let rightTick = "\u{2713}"
+    let wrongTick = "\u{2717}"
+    
+    let result = expectedValue == output
+    if result {
+        print("\(rightTick) Test #\(testCaseNumber)")
+    } else {
+        print("\(wrongTick) Test #\(testCaseNumber) Expected: \(expectedValue) Your output: \(output)")
+    }
+    testCaseNumber += 1
+}
+
+let rates1 = GrowthRates(rates: [1.1, 1.2, 1.3])
+check(79, matches: rates1.daysUntilBillionUsers())
+
+let rates2 = GrowthRates(rates: [1.01, 1.02])
+check(1047, matches: rates2.daysUntilBillionUsers())
+
+// Add your own test cases here
+let rates3 = GrowthRates(rates: [1.28, 1.28, 1.28])
+check(80, matches: rates3.daysUntilBillionUsers())
+
+
+
