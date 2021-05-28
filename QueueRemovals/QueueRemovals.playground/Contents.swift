@@ -1,10 +1,14 @@
 import UIKit
 
-typealias IndexValue = (index: Int, value: Int)
+//Queue Removals
 struct SimpleQueue {
-
-    var ivarray = [IndexValue]()
+    typealias IndexValue = (index: Int, value: Int)
     
+    private var ivarray = [IndexValue]()
+    
+    var count: Int {
+       return ivarray.count
+    }
     var isEmpty: Bool {
         return ivarray.isEmpty
     }
@@ -34,55 +38,45 @@ struct SimpleQueue {
 
 
 private extension Array where Element == Int {
-  func findPositions(n: Int, x: Int) -> [Int] {
-    var queue = SimpleQueue.init(array: self)
-    var indexes = [Int]()
-    var maxItt = 0
-    
-    
-    while maxItt < x {
-        var maxVal = IndexValue(index: -1, value: -1)
-        let maxPop = Swift.min(x, queue.ivarray.count)
-        var maxPopItt = 0
-    
-        while maxPopItt < maxPop {
+    func processPopped(popped: [SimpleQueue.IndexValue], completion: (Int) -> ()) -> [SimpleQueue.IndexValue] {
+        var popped = popped.sorted(by: { $0.value <= $1.value })
+        let last = popped.removeLast()
+        completion(last.index + 1)
+        popped.sort(by: { $0.index < $1.index })
         
-            if var currentVal = queue.pop() {
-                
-                if maxVal.value == -1 {
-                    maxVal = currentVal
-                } else if maxVal.value < currentVal.value   {
-                    
-                    if maxVal.value > 0 {
-                        maxVal.value -= 1
-                    }
-                    
-                    queue.push(maxVal)
-
-                    maxVal = currentVal
-                    
-                } else {
-                    if currentVal.value > 0 {
-                        currentVal.value -= 1
-                    }
-                    
-                    queue.push(currentVal)
-                }
-            }
-            
-            maxPopItt += 1
-        }
+        popped = popped.compactMap({
+            var v = $0
+            v.value = Swift.max(0, v.value - 1)
+            return v
+        })
         
-        print("maxVal: \(maxVal)")
-        
-        indexes.append(maxVal.index + 1)
-        
-        maxItt += 1
+        return popped
     }
-   
-    return indexes
-  }
+    
+    func findPositions(n: Int, x: Int) -> [Int] {
+        var queue = SimpleQueue.init(array: self)
+        var indexes = [Int]()
+        var maxItt = 0
+    
+        while maxItt < x {
+            var temp = [SimpleQueue.IndexValue]()
+            let maxPop = Swift.min(x, queue.count)
+            var maxPopItt = 0
+
+            while maxPopItt < maxPop {
+                guard let val = queue.pop() else { break }
+                temp.append(val)
+                maxPopItt += 1
+            }
+        
+            processPopped(popped: temp, completion: { indexes.append($0) }).compactMap { queue.push($0) }
+        
+            maxItt += 1
+        }
+        return indexes
+    }
 }
+
 
 
 
@@ -107,7 +101,7 @@ private func check(_ expectedValue: [Int], matches output: [Int]) {
 }
 
 let arr1 = [1, 2, 2, 3, 4, 5]
-let expected1 = [5, 6, 4, 3, 2]
+let expected1 = [5, 6, 4, 1, 2]
 let output1 = arr1.findPositions(n: 6, x: 5)
 check(expected1, matches: output1)
 
